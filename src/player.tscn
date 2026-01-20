@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://61c1tnuo5he1"]
+
+[ext_resource type="Script" uid="uid://bgj4pvu5i53bd" path="res://src/player.gd" id="1_lowyb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4q7qo"]
+size = Vector2(60, 120)
+
+[node name="Player" type="CharacterBody2D" unique_id=566051724]
+script = ExtResource("1_lowyb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1147414580]
+position = Vector2(0, -60)
+shape = SubResource("RectangleShape2D_4q7qo")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1957990098]
+position = Vector2(0, -60)
+target_position = Vector2(1000, 0)
