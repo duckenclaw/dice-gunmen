@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dt5fjow5ppmya"]
+[gd_scene load_steps=4 format=3 uid="uid://dt5fjow5ppmya"]
 
 [ext_resource type="Script" uid="uid://rncgi5xkw1c4" path="res://src/level.gd" id="1_ybxv7"]
 [ext_resource type="PackedScene" uid="uid://61c1tnuo5he1" path="res://src/player.tscn" id="2_4q7qo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4q7qo"]
+size = Vector2(120, 120)
 
 [node name="Level" type="Node2D" unique_id=776943301]
 script = ExtResource("1_ybxv7")
@@ -11,3 +14,10 @@ position = Vector2(80, 450)
 
 [node name="Player2" parent="." unique_id=433582748 instance=ExtResource("2_4q7qo")]
 position = Vector2(1520, 450)
+
+[node name="Obstacle" type="StaticBody2D" parent="." unique_id=2091887255]
+position = Vector2(800, 450)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle" unique_id=384721841]
+position = Vector2(0, -60)
+shape = SubResource("RectangleShape2D_4q7qo")

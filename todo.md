@@ -1,0 +1,3 @@
+- [x] add obstacles and test aiming logic with them
+- [ ] add UI
+- [ ] add sfx
