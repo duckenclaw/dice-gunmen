@@ -24,14 +24,14 @@ A turn-based 2D top-down PvP shooter where players use dice rolls to determine a
 
 #### Shoot (1 AP when fired)
 - **Enter Aim State** (Free): Press "shoot" action to enter aiming stance
-    - Movement controls now rotate the aim direction
-    - RayCast2D becomes visible showing aim direction
-    - No AP cost for entering aim mode
+	- Movement controls now rotate the aim direction
+	- RayCast2D becomes visible showing aim direction
+	- No AP cost for entering aim mode
 - **Fire** (1 AP): Press "shoot" action again while aiming
-    - Fires a projectile in the aimed direction
-    - Destroys first obstacle hit OR kills a player (1 damage)
-    - Returns to idle state
-    - Costs 1 AP when fired
+	- Fires a projectile in the aimed direction
+	- Destroys first obstacle hit OR kills a player (1 damage)
+	- Returns to idle state
+	- Costs 1 AP when fired
 
 ### Win Condition
 - Last player alive wins the game

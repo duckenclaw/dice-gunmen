@@ -11,14 +11,21 @@ signal died
 const GRID_SIZE = 60
 const MOVE_SPEED = 300.0
 
+@export var player_sprite: Texture2D
+
 var state: PlayerState = PlayerState.IDLE
 var is_controllable: bool = false
 var health: int = 1
 var current_aim_direction: Vector2 = Vector2.RIGHT
 
 @onready var raycast: RayCast2D = $RayCast2D
+@onready var sprite: Sprite2D = $Sprite2D
 
 func _ready():
+	# Apply player sprite if set
+	if player_sprite:
+		sprite.texture = player_sprite
+
 	# Snap to grid on start
 	position = _snap_to_grid(position)
 
