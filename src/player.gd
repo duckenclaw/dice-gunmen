@@ -1,3 +1,4 @@
+
 extends CharacterBody2D
 
 enum PlayerState {
@@ -35,7 +36,7 @@ func _ready():
 	# Set initial raycast direction
 	_update_raycast_direction(Vector2.RIGHT)
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if not is_controllable or health <= 0:
 		return
 

@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://dt5fjow5ppmya"]
+[gd_scene load_steps=7 format=3 uid="uid://dt5fjow5ppmya"]
 
 [ext_resource type="Script" uid="uid://rncgi5xkw1c4" path="res://src/level.gd" id="1_ybxv7"]
 [ext_resource type="PackedScene" uid="uid://61c1tnuo5he1" path="res://src/player.tscn" id="2_4q7qo"]
 [ext_resource type="Texture2D" uid="uid://dqtbqnmqvm6aa" path="res://assets/player1.png" id="3_player1"]
 [ext_resource type="Texture2D" uid="uid://dtm3fubsepa5p" path="res://assets/player2.png" id="4_player2"]
+[ext_resource type="PackedScene" path="res://src/PlayerStats.tscn" id="6_playerstats"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4q7qo"]
 size = Vector2(120, 120)
@@ -26,3 +27,30 @@ position = Vector2(800, 450)
 position = Vector2(0, -60)
 shape = SubResource("RectangleShape2D_4q7qo")
 debug_color = Color(0.9999997, 0.12612388, 0.18003389, 0.41960785)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2018314531]
+follow_viewport_enabled = true
+
+[node name="UI" type="MarginContainer" parent="CanvasLayer" unique_id=78788037]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="TurnLabel" type="Label" parent="CanvasLayer/UI" unique_id=110273433]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 42
+text = "PLAYER 1 TURN"
+
+[node name="Player1Stats" parent="CanvasLayer/UI" unique_id=1508332252 instance=ExtResource("6_playerstats")]
+
+[node name="Player2Stats" parent="CanvasLayer/UI" unique_id=1591148639 instance=ExtResource("6_playerstats")]
+layout_direction = 3
+size_flags_horizontal = 8
+size_flags_vertical = 0
