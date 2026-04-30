@@ -82,14 +82,18 @@ func _start_turn():
 	game_state = GameState.TURN_INTERMISSION
 	intermission_timer = INTERMISSION_DURATION
 
-	# Update turn label
+	# Show turn label
 	turn_label.text = "PLAYER %d TURN" % (current_player_index + 1)
+	turn_label.visible = true
 
 	# Hide both AP displays
 	player1_stats.get_node("VBoxContainer/ActionPoints").visible = false
 	player2_stats.get_node("VBoxContainer/ActionPoints").visible = false
 
 func _activate_turn():
+	# Hide turn label
+	turn_label.visible = false
+
 	# Show and update AP display for current player
 	var current_stats = player1_stats if current_player_index == 0 else player2_stats
 	_update_ap_display(current_stats, action_points)
