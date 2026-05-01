@@ -91,6 +91,19 @@ func _handle_aiming_state():
 
 func _try_move(direction: Vector2):
 	var target_pos = _snap_to_grid(position + direction * GRID_SIZE)
+	var current_cell = _world_to_cell(position)
+	var target_cell = _world_to_cell(target_pos)
+	var dir_int = Vector2i(int(round(direction.x)), int(round(direction.y)))
+
+	var door = _door_between(current_cell, target_cell)
+	if door and not door.try_pass(current_cell, target_cell):
+		print("Door blocked")
+		return
+
+	var box = _box_at(target_cell)
+	if box and not box.try_push(dir_int):
+		print("Box push blocked")
+		return
 
 	if not _is_cell_walkable(target_pos):
 		print("Move blocked")
@@ -112,6 +125,21 @@ func _is_cell_walkable(world_pos: Vector2) -> bool:
 	var blocked = obstacle_layer.get_cell_source_id(obstacle_cell) != -1
 
 	return on_floor and not blocked
+
+func _world_to_cell(world_pos: Vector2) -> Vector2i:
+	return Vector2i(int(round(world_pos.x / GRID_SIZE)), int(round(world_pos.y / GRID_SIZE)))
+
+func _door_between(a: Vector2i, b: Vector2i) -> Node:
+	for door in get_tree().get_nodes_in_group("door"):
+		if door.spans(a, b):
+			return door
+	return null
+
+func _box_at(target_cell: Vector2i) -> Node:
+	for box in get_tree().get_nodes_in_group("box"):
+		if box.cell() == target_cell:
+			return box
+	return null
 
 func _enter_aiming_state():
 	state = PlayerState.AIMING
@@ -140,9 +168,7 @@ func _fire_weapon():
 		var collider = raycast.get_collider()
 		print("Hit: ", collider.name)
 
-		# Check if we hit another player
-		if collider is CharacterBody2D and collider != self:
-			print("Hit a player!")
+		if collider != self and collider.has_method("take_damage"):
 			collider.take_damage(1)
 	else:
 		print("Missed!")
