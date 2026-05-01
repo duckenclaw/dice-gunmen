@@ -21,6 +21,8 @@ var current_aim_direction: Vector2 = Vector2.RIGHT
 
 @onready var raycast: RayCast2D = $RayCast2D
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var floor_layer: TileMapLayer = get_tree().get_first_node_in_group("floor_layer")
+@onready var obstacle_layer: TileMapLayer = get_tree().get_first_node_in_group("obstacle_layer")
 
 func _ready():
 	# Apply player sprite if set
@@ -88,21 +90,28 @@ func _handle_aiming_state():
 		_update_raycast_direction(new_direction)
 
 func _try_move(direction: Vector2):
-	# Calculate target grid position
-	var target_pos = position + direction * GRID_SIZE
+	var target_pos = _snap_to_grid(position + direction * GRID_SIZE)
 
-	# Check if target position is valid (not occupied)
-	# For now, we'll just move (collision detection handled by CharacterBody2D)
-	var previous_position = position
+	if not _is_cell_walkable(target_pos):
+		print("Move blocked")
+		return
+
 	position = target_pos
-
-	# Snap to grid
-	position = _snap_to_grid(position)
-
 	print("Player moved to: ", position)
 
-	# Emit action performed signal
 	action_performed.emit()
+
+func _is_cell_walkable(world_pos: Vector2) -> bool:
+	if floor_layer == null or obstacle_layer == null:
+		return true
+
+	var floor_cell = floor_layer.local_to_map(floor_layer.to_local(world_pos))
+	var obstacle_cell = obstacle_layer.local_to_map(obstacle_layer.to_local(world_pos))
+
+	var on_floor = floor_layer.get_cell_source_id(floor_cell) != -1
+	var blocked = obstacle_layer.get_cell_source_id(obstacle_cell) != -1
+
+	return on_floor and not blocked
 
 func _enter_aiming_state():
 	state = PlayerState.AIMING
