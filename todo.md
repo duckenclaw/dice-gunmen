@@ -1,3 +1,5 @@
 - [x] add obstacles and test aiming logic with them
 - [ ] add UI
 - [ ] add sfx
+- [ ] grenade weapon that explodes during another player's turn
+- [ ] molotov that obstructs cells for a short time

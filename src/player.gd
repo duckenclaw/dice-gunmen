@@ -6,11 +6,20 @@ enum PlayerState {
 	AIMING
 }
 
+enum Weapon {
+	NONE,
+	PISTOL,
+	SNIPER,
+	RPG
+}
+
 signal action_performed
 signal died
 
 const GRID_SIZE = 60
 const MOVE_SPEED = 300.0
+const SHOT_RANGE_CELLS = 30
+const RPG_AOE_RADIUS = 1  # 1 = 3x3 cells centered on hit
 
 @export var player_sprite: Texture2D
 
@@ -18,6 +27,8 @@ var state: PlayerState = PlayerState.IDLE
 var is_controllable: bool = false
 var health: int = 1
 var current_aim_direction: Vector2 = Vector2.RIGHT
+var current_weapon: Weapon = Weapon.NONE
+var current_ammo: int = 0
 
 @onready var raycast: RayCast2D = $RayCast2D
 @onready var sprite: Sprite2D = $Sprite2D
@@ -25,17 +36,11 @@ var current_aim_direction: Vector2 = Vector2.RIGHT
 @onready var obstacle_layer: TileMapLayer = get_tree().get_first_node_in_group("obstacle_layer")
 
 func _ready():
-	# Apply player sprite if set
 	if player_sprite:
 		sprite.texture = player_sprite
 
-	# Snap to grid on start
 	position = _snap_to_grid(position)
-
-	# Hide raycast initially
 	raycast.enabled = false
-
-	# Set initial raycast direction
 	_update_raycast_direction(Vector2.RIGHT)
 
 func _physics_process(_delta):
@@ -48,12 +53,17 @@ func _physics_process(_delta):
 		_handle_aiming_state()
 
 func _handle_idle_state():
-	# Check for shoot button to enter aiming mode
+	if Input.is_action_just_pressed("pickup"):
+		_try_pickup()
+		return
+
 	if Input.is_action_just_pressed("shoot"):
+		if current_weapon == Weapon.NONE or current_ammo <= 0:
+			print("No weapon equipped")
+			return
 		_enter_aiming_state()
 		return
 
-	# Handle movement
 	var direction = Vector2.ZERO
 
 	if Input.is_action_just_pressed("right"):
@@ -69,12 +79,10 @@ func _handle_idle_state():
 		_try_move(direction)
 
 func _handle_aiming_state():
-	# Check for shoot button to fire
 	if Input.is_action_just_pressed("shoot"):
 		_fire_weapon()
 		return
 
-	# Handle aim direction changes
 	var new_direction = Vector2.ZERO
 
 	if Input.is_action_just_pressed("right"):
@@ -114,6 +122,21 @@ func _try_move(direction: Vector2):
 
 	action_performed.emit()
 
+func _try_pickup():
+	# Use physics overlap so any weapon Area2D touching the player's body counts
+	var pickup: Node = null
+	for area in $PickupDetector.get_overlapping_areas():
+		if area.is_in_group("weapon"):
+			pickup = area
+			break
+
+	if pickup == null:
+		print("No pickup here")
+		return
+
+	if pickup.try_pickup(self):
+		action_performed.emit()
+
 func _is_cell_walkable(world_pos: Vector2) -> bool:
 	if floor_layer == null or obstacle_layer == null:
 		return true
@@ -144,45 +167,148 @@ func _box_at(target_cell: Vector2i) -> Node:
 func _enter_aiming_state():
 	state = PlayerState.AIMING
 	raycast.enabled = true
-	print("Entered aiming state")
-
-	# Note: Entering aim doesn't cost AP, only firing does
+	print("Entered aiming state with ", _weapon_label(), " (", current_ammo, " ammo)")
 
 func _update_raycast_direction(direction: Vector2):
 	current_aim_direction = direction
-
-	# Update raycast target position based on direction
-	# Scale to reasonable distance (1000 pixels)
 	raycast.target_position = direction * 1000
-
 	print("Aiming direction: ", direction)
 
 func _fire_weapon():
-	print("Firing weapon!")
+	print("Firing ", _weapon_label())
 
-	# Force raycast update
+	match current_weapon:
+		Weapon.PISTOL:
+			_fire_pistol()
+		Weapon.SNIPER:
+			_fire_sniper()
+		Weapon.RPG:
+			_fire_rpg()
+		_:
+			print("No weapon to fire")
+			_exit_aiming_state()
+			return
+
+	current_ammo -= 1
+	if current_ammo <= 0:
+		print("Out of ammo, dropping ", _weapon_label())
+		current_weapon = Weapon.NONE
+		current_ammo = 0
+
+	_exit_aiming_state()
+	action_performed.emit()
+
+func _fire_pistol():
 	raycast.force_raycast_update()
-
-	# Check if raycast hit something
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
-		print("Hit: ", collider.name)
-
+		print("Pistol hit: ", collider.name)
 		if collider != self and collider.has_method("take_damage"):
 			collider.take_damage(1)
 	else:
-		print("Missed!")
+		print("Pistol missed")
 
-	# Exit aiming state
-	_exit_aiming_state()
+func _fire_sniper():
+	var space_state = get_world_2d().direct_space_state
+	var origin = position + Vector2(0, -60)  # match raycast offset (raycast is at y=-60)
+	var end = origin + current_aim_direction * GRID_SIZE * SHOT_RANGE_CELLS
 
-	# Emit action performed signal
-	action_performed.emit()
+	var exclude: Array[RID] = []
+	# Exclude self so we don't immediately hit our own collider
+	exclude.append(get_rid())
+
+	var passes = 0
+	var max_passes = 32  # safety cap
+	while passes < max_passes:
+		passes += 1
+		var query = PhysicsRayQueryParameters2D.create(origin, end)
+		query.exclude = exclude
+		query.collide_with_bodies = true
+		var result = space_state.intersect_ray(query)
+
+		if result.is_empty():
+			print("Sniper end of range")
+			return
+
+		var collider = result.collider
+		var pierces = collider.is_in_group("box") or collider.is_in_group("door")
+
+		if collider.has_method("take_damage"):
+			print("Sniper hit: ", collider.name)
+			collider.take_damage(1)
+		else:
+			print("Sniper hit non-damageable: ", collider.name)
+
+		if not pierces:
+			return
+
+		# Continue past doors/boxes by excluding them from the next query
+		exclude.append(result.rid)
+
+func _fire_rpg():
+	raycast.force_raycast_update()
+
+	var explosion_world: Vector2
+	if raycast.is_colliding():
+		explosion_world = raycast.get_collision_point()
+	else:
+		# No hit — explode at max range
+		explosion_world = (position + Vector2(0, -60)) + current_aim_direction * GRID_SIZE * SHOT_RANGE_CELLS
+
+	var center_cell = Vector2i(
+		int(round(explosion_world.x / GRID_SIZE)),
+		int(round(explosion_world.y / GRID_SIZE))
+	)
+
+	print("RPG explosion at cell: ", center_cell)
+
+	var aoe_cells: Array[Vector2i] = []
+	for dx in range(-RPG_AOE_RADIUS, RPG_AOE_RADIUS + 1):
+		for dy in range(-RPG_AOE_RADIUS, RPG_AOE_RADIUS + 1):
+			aoe_cells.append(center_cell + Vector2i(dx, dy))
+
+	# Damage boxes in AOE
+	for box in get_tree().get_nodes_in_group("box"):
+		if box.cell() in aoe_cells:
+			print("RPG damaging box at ", box.cell())
+			box.take_damage(1)
+
+	# Damage doors whose either spanned cell is in AOE
+	for door in get_tree().get_nodes_in_group("door"):
+		if door.cell_a in aoe_cells or door.cell_b in aoe_cells:
+			print("RPG damaging door spanning ", door.cell_a, "-", door.cell_b)
+			door.take_damage(1)
+
+	# Damage players (including self) in AOE
+	for player in get_tree().get_nodes_in_group("player"):
+		var pcell = Vector2i(int(round(player.position.x / GRID_SIZE)), int(round(player.position.y / GRID_SIZE)))
+		if pcell in aoe_cells:
+			print("RPG damaging player at ", pcell)
+			if player.has_method("take_damage"):
+				player.take_damage(1)
 
 func _exit_aiming_state():
 	state = PlayerState.IDLE
 	raycast.enabled = false
 	print("Exited aiming state")
+
+func equip_weapon(weapon_type: int, ammo: int):
+	# weapon_type comes in as WeaponPickup.WeaponType ordinal; map to local Weapon enum
+	match weapon_type:
+		0: current_weapon = Weapon.PISTOL
+		1: current_weapon = Weapon.SNIPER
+		2: current_weapon = Weapon.RPG
+		_: current_weapon = Weapon.NONE
+	current_ammo = ammo
+	print("Equipped ", _weapon_label(), " with ", current_ammo, " ammo")
+
+func _weapon_label() -> String:
+	match current_weapon:
+		Weapon.NONE: return "None"
+		Weapon.PISTOL: return "Pistol"
+		Weapon.SNIPER: return "Sniper Rifle"
+		Weapon.RPG: return "RPG"
+	return "Unknown"
 
 func take_damage(amount: int):
 	health -= amount
@@ -194,7 +320,6 @@ func take_damage(amount: int):
 func _die():
 	print("Player died!")
 	died.emit(self)
-	# Optionally hide or disable the player
 	visible = false
 
 func set_controllable(controllable: bool):

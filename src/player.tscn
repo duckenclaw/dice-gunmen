@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://61c1tnuo5he1"]
+[gd_scene load_steps=5 format=3 uid="uid://61c1tnuo5he1"]
 
 [ext_resource type="Script" uid="uid://bgj4pvu5i53bd" path="res://src/player.gd" id="1_lowyb"]
 [ext_resource type="Texture2D" uid="uid://dqtbqnmqvm6aa" path="res://assets/player1.png" id="2_gmfve"]
@@ -6,7 +6,10 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4q7qo"]
 size = Vector2(60, 120)
 
-[node name="Player" type="CharacterBody2D" unique_id=566051724]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pickup"]
+size = Vector2(50, 50)
+
+[node name="Player" type="CharacterBody2D" groups=["player"] unique_id=566051724]
 script = ExtResource("1_lowyb")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1147414580]
@@ -21,3 +24,9 @@ target_position = Vector2(1000, 0)
 position = Vector2(0, -60)
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("2_gmfve")
+
+[node name="PickupDetector" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector"]
+position = Vector2(0, -30)
+shape = SubResource("RectangleShape2D_pickup")
