@@ -1,5 +1,7 @@
 - [x] add obstacles and test aiming logic with them
-- [ ] add UI
-- [ ] add sfx
-- [ ] grenade weapon that explodes during another player's turn
-- [ ] molotov that obstructs cells for a short time
+- [x] add UI
+- [x] add sfx
+- [x] special places on the map, if you end your turn there, 
+- [ ] object that creates your copy and allows you to start the turn as any of the copies (they share weapons)
+- [x] grenade weapon that explodes during another player's turn
+- [x] molotov that obstructs cells for a short time

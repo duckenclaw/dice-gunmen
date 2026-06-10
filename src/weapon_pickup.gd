@@ -3,10 +3,18 @@ class_name WeaponPickup
 
 const GRID_SIZE = 60
 
-enum WeaponType { PISTOL, SNIPER, RPG }
+enum WeaponType { PISTOL, SNIPER, RPG, MOLOTOV, GRENADE }
+
+const TARGET_SPRITE_PX = 50.0
 
 @export var weapon_type: WeaponType = WeaponType.PISTOL
 @export var ammo: int = 0  # 0 = use default for this weapon
+
+@export var pistol_texture: Texture2D
+@export var sniper_texture: Texture2D
+@export var rpg_texture: Texture2D
+@export var molotov_texture: Texture2D
+@export var grenade_texture: Texture2D
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -26,18 +34,28 @@ static func default_ammo(t: int) -> int:
 		WeaponType.PISTOL: return 5
 		WeaponType.SNIPER: return 2
 		WeaponType.RPG: return 1
+		WeaponType.MOLOTOV: return 1
+		WeaponType.GRENADE: return 1
 	return 0
 
 func _apply_visual():
 	if sprite == null:
 		return
+	var tex: Texture2D = null
 	match weapon_type:
-		WeaponType.PISTOL:
-			sprite.modulate = Color(1.0, 0.4, 0.4)
-		WeaponType.SNIPER:
-			sprite.modulate = Color(0.4, 0.6, 1.0)
-		WeaponType.RPG:
-			sprite.modulate = Color(1.0, 0.9, 0.3)
+		WeaponType.PISTOL: tex = pistol_texture
+		WeaponType.SNIPER: tex = sniper_texture
+		WeaponType.RPG: tex = rpg_texture
+		WeaponType.MOLOTOV: tex = molotov_texture
+		WeaponType.GRENADE: tex = grenade_texture
+	if tex == null:
+		return
+	sprite.texture = tex
+	var size = tex.get_size()
+	var longest = max(size.x, size.y)
+	if longest > 0:
+		var s = TARGET_SPRITE_PX / longest
+		sprite.scale = Vector2(s, s)
 
 func _snap_to_grid(pos: Vector2) -> Vector2:
 	return Vector2(

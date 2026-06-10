@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/special_cell.gd" id="1_special"]
+
+[node name="SpecialCell" type="Node2D" groups=["special_cell"]]
+script = ExtResource("1_special")

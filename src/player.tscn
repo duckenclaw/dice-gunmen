@@ -1,19 +1,42 @@
-[gd_scene load_steps=5 format=3 uid="uid://61c1tnuo5he1"]
+[gd_scene load_steps=16 format=3 uid="uid://61c1tnuo5he1"]
 
 [ext_resource type="Script" uid="uid://bgj4pvu5i53bd" path="res://src/player.gd" id="1_lowyb"]
 [ext_resource type="Texture2D" uid="uid://dqtbqnmqvm6aa" path="res://assets/player1.png" id="2_gmfve"]
+[ext_resource type="Texture2D" uid="uid://bru3w2rtx1smw" path="res://assets/revolver.png" id="3_pistol"]
+[ext_resource type="Texture2D" uid="uid://dk25mdqclw3xh" path="res://assets/sniper-rifle.png" id="4_sniper"]
+[ext_resource type="Texture2D" uid="uid://2vpsxph02uc0" path="res://assets/rpg.png" id="5_rpg"]
+[ext_resource type="AudioStream" uid="uid://3f3c0u456llf" path="res://assets/sfx/step.wav" id="6_step"]
+[ext_resource type="AudioStream" uid="uid://krra11sdxhrb" path="res://assets/sfx/ready-shot.wav" id="7_ready"]
+[ext_resource type="AudioStream" uid="uid://coki4hu7td54v" path="res://assets/sfx/shot.wav" id="8_shot"]
+[ext_resource type="AudioStream" uid="uid://bsh506egsk4ns" path="res://assets/sfx/pickup.wav" id="9_pickup"]
+[ext_resource type="Texture2D" uid="uid://dvmnc520d6dpd" path="res://assets/molotov.png" id="10_molotov"]
+[ext_resource type="Texture2D" uid="uid://cio1lu825y13r" path="res://assets/grenade.png" id="11_grenade"]
+[ext_resource type="Texture2D" uid="uid://7tyky3tywhm0" path="res://assets/bullet.png" id="12_bullet"]
+[ext_resource type="Texture2D" uid="uid://eqxtean8m3eb" path="res://assets/rocket.png" id="13_rocket"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4q7qo"]
-size = Vector2(60, 120)
+size = Vector2(60, 60)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pickup"]
-size = Vector2(50, 50)
+size = Vector2(180, 180)
 
-[node name="Player" type="CharacterBody2D" groups=["player"] unique_id=566051724]
+[node name="Player" type="CharacterBody2D" unique_id=566051724 groups=["player"]]
 script = ExtResource("1_lowyb")
+pistol_texture = ExtResource("3_pistol")
+sniper_texture = ExtResource("4_sniper")
+rpg_texture = ExtResource("5_rpg")
+molotov_texture = ExtResource("10_molotov")
+grenade_texture = ExtResource("11_grenade")
+pistol_shot_sfx = ExtResource("8_shot")
+sniper_shot_sfx = ExtResource("8_shot")
+rpg_shot_sfx = ExtResource("8_shot")
+molotov_shot_sfx = ExtResource("8_shot")
+grenade_shot_sfx = ExtResource("8_shot")
+bullet_texture = ExtResource("12_bullet")
+rocket_texture = ExtResource("13_rocket")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1147414580]
-position = Vector2(0, -60)
+position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_4q7qo")
 
 [node name="RayCast2D" type="RayCast2D" parent="." unique_id=1957990098]
@@ -25,8 +48,25 @@ position = Vector2(0, -60)
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("2_gmfve")
 
-[node name="PickupDetector" type="Area2D" parent="."]
+[node name="WeaponSprite" type="Sprite2D" parent="." unique_id=1774316162]
+visible = false
+position = Vector2(0, -60)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector"]
+[node name="PickupDetector" type="Area2D" parent="." unique_id=51587217]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector" unique_id=1235576811]
 position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_pickup")
+debug_color = Color(0.80784315, 0.41568628, 0, 0.09803922)
+
+[node name="StepSfx" type="AudioStreamPlayer" parent="." unique_id=736188523]
+stream = ExtResource("6_step")
+
+[node name="ReadyShotSfx" type="AudioStreamPlayer" parent="." unique_id=306568708]
+stream = ExtResource("7_ready")
+
+[node name="ShotSfx" type="AudioStreamPlayer" parent="." unique_id=2026726228]
+stream = ExtResource("8_shot")
+
+[node name="PickupSfx" type="AudioStreamPlayer" parent="." unique_id=452246327]
+stream = ExtResource("9_pickup")

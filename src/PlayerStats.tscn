@@ -41,3 +41,11 @@ texture = ExtResource("1_icon")
 [node name="ActionPoint6" type="TextureRect" parent="VBoxContainer/ActionPoints"]
 layout_mode = 2
 texture = ExtResource("1_icon")
+
+[node name="ActionPoint7" type="TextureRect" parent="VBoxContainer/ActionPoints"]
+layout_mode = 2
+texture = ExtResource("1_icon")
+
+[node name="ActionPoint8" type="TextureRect" parent="VBoxContainer/ActionPoints"]
+layout_mode = 2
+texture = ExtResource("1_icon")
