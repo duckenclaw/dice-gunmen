@@ -326,7 +326,7 @@ func _fire_sniper():
 func _fire_rpg():
 	var origin = position + Vector2(0, SPRITE_BASE_Y)
 	var impact = _rpg_explosion_point()
-	var aoe_cells = _cells_3x3(_world_to_cell(impact))
+	var aoe_cells = _cells_cross(_world_to_cell(impact))
 	print("RPG explosion cells: ", aoe_cells)
 
 	Projectile.spawn(get_parent(), rocket_texture, origin, impact)
@@ -417,14 +417,16 @@ func _rpg_explosion_point() -> Vector2:
 	# No hit — explode at max range
 	return (position + Vector2(0, SPRITE_BASE_Y)) + current_aim_direction * GRID_SIZE * SHOT_RANGE_CELLS
 
-# Center + 4 orthogonal + 4 diagonal cells; center stays first so callers can
-# treat cells[0] as the impact cell.
-func _cells_3x3(center: Vector2i) -> Array[Vector2i]:
-	var cells: Array[Vector2i] = [center]
-	for dx in range(-1, 2):
-		for dy in range(-1, 2):
-			if dx != 0 or dy != 0:
-				cells.append(center + Vector2i(dx, dy))
+# 5-cell cross: center + 4 orthogonal neighbors; center stays first so
+# callers can treat cells[0] as the impact cell.
+func _cells_cross(center: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = [
+		center,
+		center + Vector2i.RIGHT,
+		center + Vector2i.LEFT,
+		center + Vector2i.UP,
+		center + Vector2i.DOWN
+	]
 	return cells
 
 func _update_aoe_preview():
@@ -434,9 +436,9 @@ func _update_aoe_preview():
 	if state != PlayerState.AIMING:
 		grid_overlay.clear_aoe()
 	elif _is_thrown_weapon():
-		grid_overlay.show_aoe(_cells_3x3(throw_cell))
+		grid_overlay.show_aoe(_cells_cross(throw_cell))
 	elif current_weapon == Weapon.RPG:
-		grid_overlay.show_aoe(_cells_3x3(_world_to_cell(_rpg_explosion_point())))
+		grid_overlay.show_aoe(_cells_cross(_world_to_cell(_rpg_explosion_point())))
 	else:
 		grid_overlay.clear_aoe()
 
@@ -475,7 +477,7 @@ func _adjust_throw_target(direction: Vector2):
 	_update_aoe_preview()
 
 func _throw_weapon():
-	var cells = _cells_3x3(throw_cell)
+	var cells = _cells_cross(throw_cell)
 	var icon = _weapon_texture()
 	var origin = position + Vector2(0, SPRITE_BASE_Y)
 	var target_world = Vector2(throw_cell) * GRID_SIZE
