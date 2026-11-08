@@ -18,7 +18,7 @@
 size = Vector2(60, 60)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pickup"]
-size = Vector2(180, 180)
+size = Vector2(60, 60)
 
 [node name="Player" type="CharacterBody2D" unique_id=566051724 groups=["player"]]
 script = ExtResource("1_lowyb")

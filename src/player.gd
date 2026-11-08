@@ -115,6 +115,10 @@ func _handle_idle_state():
 		_try_move(direction)
 
 func _handle_aiming_state():
+	if Input.is_action_just_pressed("pickup"):
+		_exit_aiming_state()
+		return
+
 	if Input.is_action_just_pressed("shoot"):
 		_fire_weapon()
 		return
